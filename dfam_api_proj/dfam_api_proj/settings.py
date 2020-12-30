@@ -28,10 +28,8 @@ DATABASES
         'PORT'
 DEBUG
 SECRET_KEY
-
-TODO:
-base path for uploaded files
-
+UPLOAD_PATH
+URL_PREFIX
 """
 env = environ.Env()
 environ.Env.read_env()
@@ -50,6 +48,10 @@ SECRET_KEY = env.str("SECRET_KEY")
 DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+
+UPLOAD_PATH = env.str("UPLOAD_PATH")
+
+URL_PREFIX = env.str("URL_PREFIX")
 
 # Application definition
 
@@ -103,11 +105,11 @@ WSGI_APPLICATION = 'dfam_api_proj.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE' : 'django.db.backends.postgresql',
-        'NAME' : env.str("DEFAULT_DB_NAME"),
-        'USER' : env.str("DEFAULT_DB_USER"),
-        'PASSWORD' : env.str("DEFAULT_DB_PASSWORD"),
-        'HOST': env.str("DEFAULT_DB_HOST"),
-        'PORT' : env.int("DEFAULT_DB_PORT")
+        'NAME' : env.str("DATABASES_DEFAULT_NAME"),
+        'USER' : env.str("DATABASES_DEFAULT_USER"),
+        'PASSWORD' : env.str("DATABASES_DEFAULT_PASSWORD"),
+        'HOST': env.str("DATABASES_DEFAULT_HOST"),
+        'PORT' : env.int("DATABASES_DEFAULT_PORT")
     }
 }
 

@@ -195,14 +195,13 @@ class DataFileSub(models.Model):
     """
     uuid = models.CharField(
         max_length = 32,
-        min_length = 32,
         null = False,
         blank = False,
         unique = True
     )
 
     file_name = models.CharField(
-        max_length = 40
+        max_length = 40,
         null = False,
         blank = False,
         unique = True
@@ -253,3 +252,21 @@ class DataFileSub(models.Model):
     class Meta:
         verbose_name = "Data File Submission"
         verbose_name_plural = "Data File Submissions"
+
+"""
+    expression of entities found in a given submission
+    - fkey to DataFileSub
+    - fkey to DataFileEntity
+"""
+
+"""
+    mapping of the line numbers where an entity is observed
+    - fkey to whatever we call the model above
+    - line number int    
+"""
+
+"""
+    mapping between "expression of entities found in a given submission" model
+    DataFileEntityColumn
+    observed value from file (make them all strings?)
+"""
