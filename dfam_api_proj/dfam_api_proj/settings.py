@@ -29,6 +29,9 @@ DATABASES
 DEBUG
 SECRET_KEY
 
+TODO:
+base path for uploaded files
+
 """
 env = environ.Env()
 environ.Env.read_env()
