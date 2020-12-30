@@ -10,7 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import environ
+import os
+
 from pathlib import Path
+
+"""
+Settings that are expressed in our .env file:
+---------------------------------------------
+ALLOWED_HOSTS
+DATABASES
+    'default'
+        'NAME'
+        'USER'
+        'PASSWORD'
+        'HOST'
+        'PORT'
+DEBUG
+SECRET_KEY
+
+"""
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +41,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'o%thtseawpbf)*m0-(oqt%k=s59z4y2&qk@lv4if3)i1y(z)c*'
+SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG")
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # Application definition
 
@@ -37,6 +57,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dfam_api_app',
 ]
 
 MIDDLEWARE = [
@@ -75,11 +99,14 @@ WSGI_APPLICATION = 'dfam_api_proj.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE' : 'django.db.backends.postgresql',
+        'NAME' : env.str("DEFAULT_DB_NAME"),
+        'USER' : env.str("DEFAULT_DB_USER"),
+        'PASSWORD' : env.str("DEFAULT_DB_PASSWORD"),
+        'HOST': env.str("DEFAULT_DB_HOST"),
+        'PORT' : env.int("DEFAULT_DB_PORT")
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -105,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Denver'
 
 USE_I18N = True
 
@@ -118,3 +145,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES' : [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
