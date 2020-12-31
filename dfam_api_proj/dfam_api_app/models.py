@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 
 """
@@ -75,7 +76,7 @@ class DataFileEntity(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields = ["data_file_type", "name"],
-                name = "datafileentity_dft_n"
+                name = "dfe_dft_n"
             )
         ]
 
@@ -125,7 +126,7 @@ class DataFileEntityColumn(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields = ["data_file_entity", "name", "column_name"],
-                name = "datafileentitiycolumn_dfe_n_cn"
+                name = "dfec_dfe_n_cn"
             )
         ]
 
@@ -159,7 +160,7 @@ class UserDataFileType(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields = ["user", "data_file_type"],
-                name = "userdatafiletype_u_dft"
+                name = "udft_u_dft"
             )
         ]
 
@@ -253,20 +254,240 @@ class DataFileSub(models.Model):
         verbose_name = "Data File Submission"
         verbose_name_plural = "Data File Submissions"
 
-"""
-    expression of entities found in a given submission
-    - fkey to DataFileSub
-    - fkey to DataFileEntity
-"""
+class DataFileSubEntity(models.Model):
+    """
+    Expression of entities found in a given submission
+    """
+    data_file_sub = models.ForeignKey(
+        DataFileSub,
+        on_delete = models.CASCADE,
+        related_name = "entity"
+    )
 
-"""
-    mapping of the line numbers where an entity is observed
-    - fkey to whatever we call the model above
-    - line number int    
-"""
+    data_file_entity = models.ForeignKey(
+        DataFileEntity,
+        on_delete = models.CASCADE
+    )
 
-"""
-    mapping between "expression of entities found in a given submission" model
-    DataFileEntityColumn
-    observed value from file (make them all strings?)
-"""
+    novel = models.BooleanField(
+        default = False
+    )
+
+    def __str__(self):
+        return "{0} of {1}".format(
+            str(self.data_file_entity),
+            str(self.data_file_sub)
+        )
+
+    class Meta:
+        verbose_name = "Data File Submission Entity"
+        verbose_name_plural = "Data File Submission Entities"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_sub", "data_file_entity"],
+                name = "dfse_dfs_dfe"
+            )
+        ]
+
+class DataFileSubEntityColVal(models.Model):
+    """
+    Expression of the entity, column and observed value from a submitted file
+    """
+    data_file_sub_entity = models.ForeignKey(
+        DataFileSubEntity,
+        on_delete = models.CASCADE,
+        related_name = "col_val"
+    )
+
+    data_file_entity_column = models.ForeignKey(
+        DataFileEntityColumn,
+        on_delete = models.CASCADE        
+    )
+
+    column_value = models.CharField(
+        max_length = 255,
+        null = False,
+        blank = False
+    )
+
+    def __str__(self):
+        return "{0} = {1} for {2}".format(
+            str(self.data_file_entity_column),
+            str(self.column_value),
+            str(self.data_file_sub_entity)
+        )
+
+    class Meta:
+        verbose_name = "Data File Submission Entity Column Value"
+        verbose_name_plural = "Data File Submission Entity Column Values"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_sub_entity", "data_file_entity_column"],
+                name = "dfsecv_dfse_dfec"
+            )
+        ]
+
+class DataFileSubEntityLine(models.Model):
+    """
+    Expression of the line numbers where an entity was found in a submitted file
+    """
+    data_file_sub_entity = models.ForeignKey(
+        DataFileSubEntity,
+        on_delete = models.CASCADE,
+        related_name = "line_col_val"
+    )
+
+    line_number = models.PositiveIntegerField(
+        null = False,
+        blank = False,
+        validators = [MinValueValidator(1)]
+    )
+
+    def __str__(self):
+        return "{0} found in line {1}".format(
+            str(data_file_sub_entity),
+            str(self.line_number)
+        )
+
+    class Meta:
+        verbose_name = "Data File Submission Entity Line"
+        verbose_name_plural = "Data File Submission Entity Lines"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_sub_entity", "line_number"],
+                name = "dfsel_dfse_ln"
+            )
+        ]
+
+class RemoteSetEntity(models.Model):
+    """
+    Expression of entity from a remote object set that we're attempting to match against
+    (might be a crazy idea, but we might want to populate this exhaustively)
+    """
+    data_file_sub = models.ForeignKey(
+        DataFileSub,
+        on_delete = models.CASCADE,
+        related_name = "matching_set_entity"
+    )
+
+    data_file_entity = models.ForeignKey(
+        DataFileEntity,
+        on_delete = models.CASCADE
+    )
+
+    remote_key = models.CharField(
+        max_length = 100,
+        null = False,
+        blank = False
+    )
+
+    def __str__(self):
+        return "Remote entity({0}) for {1}, {2}".format(
+            self.remote_key,
+            str(self.data_file_sub),
+            str(self.data_file_entity)
+        )
+    
+    class Meta:
+        verbose_name = "Remote Set Entity"
+        verbose_name_plural = "Remote Set Entities"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_sub", "data_file_entity"],
+                name = "rse_dfs_dfe"
+            )
+        ]
+
+class RemoteSetEntityColVal(models.Model):
+    """
+    Expression of a remote set entity, column and value
+    """
+    remote_set_entity = models.ForeignKey(
+        RemoteSetEntity,
+        on_delete = models.CASCADE,
+        related_name = "col_val"
+    )
+
+    data_file_entity_column = models.ForeignKey(
+        DataFileEntityColumn,
+        on_delete = models.CASCADE        
+    )
+
+    column_value = models.CharField(
+        max_length = 255,
+        null = False,
+        blank = False
+    )
+
+    def __str__(self):
+        return "{0} = {1} for {2}".format(
+            str(self.data_file_entity_column),
+            str(self.column_value),
+            str(self.remote_set_entity)
+        )
+
+    class Meta:
+        verbose_name = "Remote Set Entity Column Value"
+        verbose_name_plural = "Remote set Entity Column Values"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["remote_set_entity", "data_file_entity_column"],
+                name = "rsecv_dfse_dfec"
+            )
+        ]
+
+class DataFileSubEntityRemoteSetEntityAutoMatch(models.Model):
+    data_file_entity = models.ForeignKey(
+        DataFileEntity,
+        on_delete = models.CASCADE,
+        related_name = "auto_match"
+    )
+
+    remote_set_entity = models.ForeignKey(
+        RemoteSetEntity,
+        on_delete = models.CASCADE     
+    )
+
+    match_score = models.PositiveIntegerField(
+        null = False,
+        blank = False
+    )
+
+    def __str__(self):
+        return "{0} <-({1})-> {1}".format(
+            str(self.data_file_entity),
+            str(self.match_score),
+            str(self.remote_set_entity)
+        )
+
+    class Meta:
+        verbose_name = "Data File Submission Entity Remote Set Entity Auto Match"
+        verbose_name_plural = "Data File Submission Entity Remote Set Entity Auto Matches"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_entity", "remote_set_entity"],
+                name = "dfserseam_dfe_rse"
+            )
+        ]
+
+class DataFileSubEntityRemoteSetEntityEquiv(models.Model):
+    data_file_entity = models.ForeignKey(
+        DataFileEntity,
+        on_delete = models.CASCADE,
+        related_name = "equiv"
+    )
+
+    remote_set_entity = models.ForeignKey(
+        RemoteSetEntity,
+        on_delete = models.CASCADE     
+    )
+
+    class Meta:
+        verbose_name = "Data File Submission Entity Remote Set Entity Equivalent"
+        verbose_name_plural = "Data File Submission Entity Remote Set Entity Equivalents"
+        constraints = [
+            models.UniqueConstraint(
+                fields = ["data_file_entity", "remote_set_entity"],
+                name = "dfsersee_dfe_rse"
+            )
+        ]
