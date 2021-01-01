@@ -160,7 +160,7 @@ class UserDataFileType(models.Model):
     )
 
     data_file_type = models.ForeignKey(
-        DataFileEntity,
+        DataFileType,
         on_delete = models.CASCADE,
         related_name = "data_file_type_user"
     )
