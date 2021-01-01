@@ -220,7 +220,7 @@ class DataFileSub(models.Model):
         unique = True
     )
 
-    file = models.FileField(        
+    file = models.FileField(
         storage = dfs_fs,
         upload_to = data_file_sub_upload_to,
         null = False,

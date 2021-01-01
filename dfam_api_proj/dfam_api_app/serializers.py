@@ -2,13 +2,40 @@ from django.utils import timezone
 
 from rest_framework import fields, serializers
 
+from datetime import datetime as dt
 import uuid
 
 from dfam_api_app.models import *
 
 
 class DataFileSubReadSerializer(serializers.ModelSerializer):
-    pass
+    data_file_type = serializers.SerializerMethodField()
+    data_file_sub_state = serializers.SerializerMethodField()
+    submitted = serializers.SerializerMethodField()
+    updated = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DataFileSub
+        fields = (
+            "id",
+            "data_file_type",
+            "data_file_sub_state",
+            "data_file_sub_state_description",
+            "submitted",
+            "updated"
+        )
+    
+    def get_data_file_type(self, instance):
+        return instance.data_file_type.display_name
+    
+    def get_data_file_sub_state(self, instance):
+        return instance.data_file_sub_state.display_name
+
+    def get_submitted(self, instance):
+        return instance.submitted.strftime("%m/%d/%Y, %H:%M")
+
+    def get_updated(self, instance):
+        return instance.updated.strftime("%m/%d/%Y, %H:%M")
 
 class DataFileSubWriteSerializer(serializers.ModelSerializer):
     class Meta:

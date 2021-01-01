@@ -83,7 +83,9 @@ class DataFileSubView(APIView):
                 status = status.HTTP_400_BAD_REQUEST
             )
 
-class DataFileSubMetaRelatedView(APIView):    
+class DataFileSubMetaRelatedView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         if("fetch_related" in self.request.query_params):
             
@@ -117,3 +119,17 @@ class DataFileSubMetaRelatedView(APIView):
             return Response(
                 status = status.HTTP_204_NO_CONTENT
             )
+
+class UserDataFileSubView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        return Response(
+            DataFileSubReadSerializer(
+                DataFileSubReadSerializer(
+                    DataFileSub.objects.filter(owner = self.request.user).order_by("submitted")
+                ),
+                many = True
+            ).data,
+            status = status.HTTP_200_OK
+        )
