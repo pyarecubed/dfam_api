@@ -1,10 +1,29 @@
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
+
+from rest_framework.authentication import TokenAuthentication
+
+import os
 
 """
 TODO be wise to craft some fixtures to initialize things - expecially our enumish models
 """
+
+dfs_fs = FileSystemStorage(location = settings.UPLOAD_PATH)
+
+def data_file_sub_upload_to(instance, post_filename):
+    file_ext = os.path.splitext(post_filename)[-1]
+    file_name = "{0}{1}".format(
+        instance.uuid,
+        file_ext
+    )
+    return os.path.join(
+        settings.UPLOAD_PATH,
+        file_name
+    )
 
 class DataFileType(models.Model):
     """
@@ -87,7 +106,7 @@ class DataFileEntityColumn(models.Model):
     data_file_entity = models.ForeignKey(
         DataFileEntity,
         on_delete = models.CASCADE,
-        related_name = "column"
+        related_name = "col"
     )
 
     name = models.CharField(
@@ -102,7 +121,7 @@ class DataFileEntityColumn(models.Model):
         blank = False
     )
 
-    column_name = models.CharField(
+    col_name = models.CharField(
         max_length = 255,
         null = False,
         blank = False
@@ -195,29 +214,39 @@ class DataFileSub(models.Model):
     Uploaded/Submitted Data Files
     """
     uuid = models.CharField(
-        max_length = 32,
+        max_length = 36,
         null = False,
         blank = False,
         unique = True
     )
 
-    file_name = models.CharField(
-        max_length = 40,
+    file = models.FileField(        
+        storage = dfs_fs,
+        upload_to = data_file_sub_upload_to,
         null = False,
-        blank = False,
-        unique = True
+        blank = False
     )
 
     data_file_type = models.ForeignKey(
         DataFileType,
         on_delete = models.CASCADE,
-        related_name = "data_file_type_sub"
+        related_name = "data_file_type_sub",
+        null = True,
+        blank = True
     )
 
     data_file_sub_state = models.ForeignKey(
         DataFileSubState,
         on_delete = models.CASCADE,
-        related_name = "data_file_state_sub"
+        related_name = "data_file_state_sub",
+        null = True,
+        blank = True
+    )
+
+    data_file_sub_state_description = models.CharField(
+        max_length = 255,
+        null = True,
+        blank = True
     )
 
     owner = models.ForeignKey(
@@ -304,7 +333,7 @@ class DataFileSubEntityColVal(models.Model):
         on_delete = models.CASCADE        
     )
 
-    column_value = models.CharField(
+    col_value = models.CharField(
         max_length = 255,
         null = False,
         blank = False
@@ -313,7 +342,7 @@ class DataFileSubEntityColVal(models.Model):
     def __str__(self):
         return "{0} = {1} for {2}".format(
             str(self.data_file_entity_column),
-            str(self.column_value),
+            str(self.col_value),
             str(self.data_file_sub_entity)
         )
 
@@ -413,7 +442,7 @@ class RemoteSetEntityColVal(models.Model):
         on_delete = models.CASCADE        
     )
 
-    column_value = models.CharField(
+    col_value = models.CharField(
         max_length = 255,
         null = False,
         blank = False
@@ -422,7 +451,7 @@ class RemoteSetEntityColVal(models.Model):
     def __str__(self):
         return "{0} = {1} for {2}".format(
             str(self.data_file_entity_column),
-            str(self.column_value),
+            str(self.col_value),
             str(self.remote_set_entity)
         )
 
@@ -491,3 +520,6 @@ class DataFileSubEntityRemoteSetEntityEquiv(models.Model):
                 name = "dfsersee_dfe_rse"
             )
         ]
+
+class DRFBearerAuth(TokenAuthentication):
+    keyword = "Bearer"

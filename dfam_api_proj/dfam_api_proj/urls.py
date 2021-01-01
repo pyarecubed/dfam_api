@@ -20,4 +20,5 @@ from dfam_api_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('data_file_sub', views.DataFileSubView.as_view())
 ]
