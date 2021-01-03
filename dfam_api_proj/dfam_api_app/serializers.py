@@ -26,6 +26,7 @@ class DataFileSubReadSerializer(serializers.ModelSerializer):
         )
     
     def get_data_file_type(self, instance):
+        print(instance)
         return instance.data_file_type.display_name
     
     def get_data_file_sub_state(self, instance):

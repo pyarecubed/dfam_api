@@ -230,9 +230,7 @@ class DataFileSub(models.Model):
     data_file_type = models.ForeignKey(
         DataFileType,
         on_delete = models.CASCADE,
-        related_name = "data_file_type_sub",
-        null = True,
-        blank = True
+        related_name = "data_file_type_sub"        
     )
 
     data_file_sub_state = models.ForeignKey(
@@ -274,7 +272,8 @@ class DataFileSub(models.Model):
 
     def __str__(self):
         return "{0}'s DataFileSub: {1} of {2} in {3}".format(
-            self.file_name,
+            "{0} {1}".format(self.owner.first_name, self.owner.last_name),
+            self.file,
             str(self.data_file_type),
             str(self.data_file_sub_state)
         )

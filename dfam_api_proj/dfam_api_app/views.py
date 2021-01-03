@@ -123,12 +123,10 @@ class DataFileSubMetaRelatedView(APIView):
 class UserDataFileSubView(APIView):
     permission_classes = (IsAuthenticated,)
     
-    def get(self, request):
+    def get(self, request):        
         return Response(
-            DataFileSubReadSerializer(
-                DataFileSubReadSerializer(
-                    DataFileSub.objects.filter(owner = self.request.user).order_by("submitted")
-                ),
+            DataFileSubReadSerializer(                
+                DataFileSub.objects.filter(owner = self.request.user).order_by("submitted"),                
                 many = True
             ).data,
             status = status.HTTP_200_OK
