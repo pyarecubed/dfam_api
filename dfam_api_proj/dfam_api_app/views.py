@@ -74,7 +74,10 @@ class DataFileSubView(APIView):
                     status = status.HTTP_400_BAD_REQUEST
                 )                        
             return Response(
-                {"message" : "all good, baby!"},
+                {
+                    "data_file_sub" : DataFileSubReadSerializer(persisted_data_file_sub).data,
+                    "message" : "File Sub saved"
+                },
                 status = status.HTTP_200_OK
             )
         else:
