@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.files.storage import FileSystemStorage
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -12,18 +11,19 @@ import os
 TODO be wise to craft some fixtures to initialize things - expecially our enumish models
 """
 
-dfs_fs = FileSystemStorage(location = settings.UPLOAD_PATH)
-
 def data_file_sub_upload_to(instance, post_filename):
     file_ext = os.path.splitext(post_filename)[-1]
     file_name = "{0}{1}".format(
         instance.uuid,
         file_ext
     )
+    """
     return os.path.join(
         settings.UPLOAD_PATH,
         file_name
     )
+    """
+    return file_name
 
 class DataFileType(models.Model):
     """
@@ -220,8 +220,7 @@ class DataFileSub(models.Model):
         unique = True
     )
 
-    file = models.FileField(
-        storage = dfs_fs,
+    file = models.FileField(        
         upload_to = data_file_sub_upload_to,
         null = False,
         blank = False

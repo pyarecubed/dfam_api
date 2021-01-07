@@ -28,7 +28,7 @@ DATABASES
         'PORT'
 DEBUG
 SECRET_KEY
-UPLOAD_PATH
+DFAM_UPLOAD_PATH
 URL_PREFIX
 """
 env = environ.Env()
@@ -49,7 +49,8 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-UPLOAD_PATH = env.str("UPLOAD_PATH")
+#UPLOAD_PATH = env.str("UPLOAD_PATH")
+MEDIA_ROOT = env.str("DFAM_UPLOAD_PATH")
 
 URL_PREFIX = env.str("URL_PREFIX")
 
