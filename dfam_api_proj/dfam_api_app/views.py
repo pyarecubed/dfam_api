@@ -7,6 +7,9 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from functools import reduce
+import operator
+
 from dfam_api_app.models import *
 from dfam_api_app.serializers import *
 
@@ -36,6 +39,10 @@ endpoint/URL that
 """
     update the state of a file submission
 """
+
+class SubmissionProcessor(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.userprofile.submission_processor
 
 class DataFileSubView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -85,6 +92,56 @@ class DataFileSubView(APIView):
                 data_file_sub_write_ser.errors,
                 status = status.HTTP_400_BAD_REQUEST
             )
+
+class DataFileSubsView(APIView):
+    permission_classes = (IsAuthenticated, SubmissionProcessor,)
+    
+    """
+        <required>:data_file_type.name
+        <required>:data_file_sub_state.name
+    """
+    def get(self, request):
+        print(request)
+        if("data_file_type" in self.request.query_params):
+            qp_data_file_type = request.query_params["data_file_type"].strip()
+            if(DataFileType.objects.filter(name__iexact = qp_data_file_type).exists()):
+                data_file_type = DataFileType.objects.get(name__iexact = qp_data_file_type)
+            else:
+                return Response(
+                    {"error" : "'{0}' is not a valid DataFileType.".format(qp_data_file_type)},
+                    status = status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response(
+                {"error" : "'data_file_type' is a required query parameter."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        if("data_file_sub_state" in self.request.query_params):
+            qp_data_file_sub_state = request.query_params["data_file_sub_state"].strip()
+            if(DataFileSubState.objects.filter(name__iexact = request.query_params["data_file_sub_state"].strip()).exists()):                
+                data_file_sub_state = DataFileSubState.objects.get(name__iexact = qp_data_file_sub_state)
+            else:
+                return Response(
+                    {"error" : "'{0}' is not a valid DataFileSubState.".format(qp_data_file_sub_state)},
+                    status = status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response(
+                {"error" : "'data_file_sub_state' is a required query parameter."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response(
+            DataFileSubReadSerializer(
+                DataFileSub.objects.filter(
+                    data_file_type = data_file_type,
+                    data_file_sub_state = data_file_sub_state
+                ),
+                many = True
+            ).data,
+            status = status.HTTP_200_OK
+        )
 
 class DataFileSubMetaRelatedView(APIView):
     permission_classes = (IsAuthenticated,)
