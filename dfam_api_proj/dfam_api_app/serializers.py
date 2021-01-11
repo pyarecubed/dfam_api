@@ -8,7 +8,6 @@ import uuid
 
 from dfam_api_app.models import *
 
-
 class DataFileSubReadSerializer(serializers.ModelSerializer):
     data_file_type = serializers.SerializerMethodField()
     data_file_sub_state = serializers.SerializerMethodField()
@@ -65,6 +64,25 @@ class DataFileSubWriteSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         pass
+
+class DataFileEntityColumnReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataFileEntityColumn
+        fields = (
+            "id",
+            "name",
+            "col_name"
+        )
+
+class DataFileEntityReadSerializer(serializers.ModelSerializer):
+    columns = DataFileEntityColumnReadSerializer(many = True)
+    class Meta:
+        model = DataFileEntity
+        fields = (
+            "id",
+            "name",
+            "columns",
+        )
 
 class UserDataFileTypeSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()

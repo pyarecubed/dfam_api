@@ -19,9 +19,10 @@ from django.urls import path
 from dfam_api_app import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),    
     path('data_file_sub', views.DataFileSubView.as_view()),
-    path('data_file_sub/meta_related', views.DataFileSubMetaRelatedView.as_view()),
+    path('data_file_sub/meta_related', views.DataFileSubMetaRelatedView.as_view()),    
     path('data_file_sub_proc/data_file_subs', views.DataFileSubsView.as_view()),
-    path('user/data_file_sub', views.UserDataFileSubView.as_view()),
+    path('data_file_type_entities/<str:data_file_type>', views.DataFileTypeEntitiesView.as_view()),
+    path('user/data_file_sub', views.UserDataFileSubView.as_view()),    
 ]

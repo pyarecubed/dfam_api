@@ -106,7 +106,7 @@ class DataFileEntityColumn(models.Model):
     data_file_entity = models.ForeignKey(
         DataFileEntity,
         on_delete = models.CASCADE,
-        related_name = "col"
+        related_name = "columns"
     )
 
     name = models.CharField(
@@ -144,7 +144,7 @@ class DataFileEntityColumn(models.Model):
         verbose_name_plural = "Data File (row) Entity Columns"
         constraints = [
             models.UniqueConstraint(
-                fields = ["data_file_entity", "name", "column_name"],
+                fields = ["data_file_entity", "name", "col_name"],
                 name = "dfec_dfe_n_cn"
             )
         ]

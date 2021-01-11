@@ -18,13 +18,6 @@ whichever django imports we need to read from settings to get our uploaded files
 """
 
 """
-endpoint/URL that 
-    accepts file uploads
-    renames the file to a (G)UID
-    upserts a file object from models into the db
-"""
-
-"""
     get all file types for user in question
 """
 
@@ -100,8 +93,7 @@ class DataFileSubsView(APIView):
         <required>:data_file_type.name
         <required>:data_file_sub_state.name
     """
-    def get(self, request):
-        print(request)
+    def get(self, request):        
         if("data_file_type" in self.request.query_params):
             qp_data_file_type = request.query_params["data_file_type"].strip()
             if(DataFileType.objects.filter(name__iexact = qp_data_file_type).exists()):
@@ -180,6 +172,26 @@ class DataFileSubMetaRelatedView(APIView):
                 status = status.HTTP_204_NO_CONTENT
             )
 
+class DataFileTypeEntitiesView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, data_file_type):
+        if(not DataFileType.objects.filter(name = data_file_type).exists()):
+            return Response(
+                {"error" : "'{0}' is not a defined DataFileType.".format(data_file_type)},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            DataFileEntityReadSerializer(
+                DataFileEntity.objects.filter(
+                    data_file_type__name = data_file_type
+                ),
+                many = True    
+            ).data,
+            status = status.HTTP_200_OK
+        )
+        
+   
 class UserDataFileSubView(APIView):
     permission_classes = (IsAuthenticated,)
     
